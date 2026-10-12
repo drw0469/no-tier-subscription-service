@@ -151,8 +151,6 @@ def edit_profile(request, user_id=None):
     return render(request, 'edit_profile.html', {'form': form, 'target_user': target_user})
 
 
-    return render(request, 'edit_profile.html', {'form': form, 'target_user': target_user})
-
 @login_required
 def create_internal_user(request):
     """Restricted explicitly to Admins for creating staff/admins."""

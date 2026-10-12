@@ -50,10 +50,6 @@
                 <!-- Search bar layout block: Place right inside card-body above the customer table -->
                 <div class="mb-4">
                     <form method="get" class="row g-2">
-                        <!-- Preserve current audit page filter state if it was clicked -->
-                        {% if request.GET.log_page %}
-                            <input type="hidden" name="log_page" value="{{ request.GET.log_page }}">
-                        {% endif %}
                         
                         <div class="col-md-8 col-sm-9">
                             <div class="input-group">
@@ -204,18 +200,16 @@
                                 <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
                             {% endif %}
 
-                            <!-- Numbered Links -->
+                            <!-- UPDATE THE PAGINATION LINKS MATRIX LOOP IN BOTH DASHBOARD TEMPLATES -->
                             {% for num in customers.paginator.page_range %}
                                 {% if customers.number == num %}
-                                    <li class="page-item active" aria-current="page">
-                                        <span class="page-link bg-primary border-primary fw-bold">{{ num }}</span>
-                                    </li>
+                                    <li class="page-item active"><span class="page-link bg-primary border-primary fw-bold">{{ num }}</span></li>
                                 {% elif num > customers.number|add:'-3' and num < customers.number|add:'3' %}
-                                    <li class="page-item">
-                                        <a class="page-link text-dark" href="?page={{ num }}&search={{ search_query }}">{{ num }}</a>
-                                    </li>
+                                    <!-- ADDED: &search={{ search_query }} to lock filtering down -->
+                                    <li class="page-item"><a class="page-link text-dark" href="?page={{ num }}&search={{ search_query }}">{{ num }}</a></li>
                                 {% endif %}
                             {% endfor %}
+
 
                             <!-- Next Button -->
                             {% if customers.has_next %}
