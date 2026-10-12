@@ -29,9 +29,9 @@ urlpatterns = [
     # Payment
     path('checkout/', views.mock_checkout, name='mock_checkout'),
 
+    path('manage/delete-user/<int:user_id>/', views.admin_delete_user, name='admin_delete_user'),
     path('manage/impersonate/<int:user_id>/', views.impersonate_user, name='impersonate_user'),
     path('manage/stop-impersonating/', views.stop_impersonating, name='stop_impersonating'),
-
     path('manage/audit-logs/', views.audit_log_view, name='audit_log_view'),
 
 

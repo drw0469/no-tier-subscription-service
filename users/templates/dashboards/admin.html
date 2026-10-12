@@ -66,7 +66,6 @@
                     </form>
                 </div>
 
-
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
@@ -98,6 +97,13 @@
                                     <a href="{% url 'impersonate_user' customer.id %}" class="btn btn-sm btn-outline-primary fw-medium">
                                         🔍 Login As
                                     </a>
+
+                                    <!-- Place this inside your admin.html table actions column next to your Edit links -->
+                                    <form action="{% url 'admin_delete_user' customer.id %}" method="post" class="d-inline" onsubmit="return confirm('🚨 CRITICAL WARNING: Are you completely sure you want to permanently delete this account? This will permanently erase all associated subscription timelines and billing transaction log entries.');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+
                                     
                                     <a href="{% url 'edit_user_profile' customer.id %}" class="btn btn-sm btn-outline-dark">Modify Account</a>
                                     
@@ -270,6 +276,12 @@
                                     <td class="text-secondary">{{ partner.get_full_name|default:"Corporate Partner" }}</td>
                                     <td class="text-muted small">{{ partner.email }}</td>
                                     <td class="text-end pe-3">
+
+                                        <form action="{% url 'admin_delete_user' partner.id %}" method="post" class="d-inline" onsubmit="return confirm('Permanently delete this executive account?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+
                                         <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1 text-uppercase fw-bold" style="font-size: 0.65rem;">
                                             Financial Analytics View Only
                                         </span>
@@ -307,6 +319,12 @@
                             <td>{{ member.email }}</td>
                             <td><span class="badge bg-secondary font-monospace">STAFF_ROLE</span></td>
                             <td class="text-end pe-3">
+
+                                <form action="{% url 'admin_delete_user' member.id %}" method="post" class="d-inline" onsubmit="return confirm('🚨 CRITICAL WARNING: Are you completely sure you want to permanently delete this account? This will permanently erase all associated subscription timelines and billing transaction log entries.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+
                                 <a href="{% url 'edit_user_profile' member.id %}" class="btn btn-sm btn-outline-dark">Modify Account</a>
                             </td>
                         </tr>

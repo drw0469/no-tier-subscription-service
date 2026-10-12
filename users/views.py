@@ -417,3 +417,24 @@ def executive_dashboard(request):
         'payments': payments_page
     })
 
+
+@login_required
+def admin_delete_user(request, user_id):
+    """Permanently deletes an account from the system database. Restricted strictly to Master Admins."""
+    if not request.user.is_admin_member:
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        target_user = get_object_or_404(User, id=user_id)
+        
+        # Security Safeguard: Prevent the admin from accidentally deleting themselves!
+        if target_user == request.user:
+            messages.error(request, "Security Exception: You cannot delete your own master admin session account.")
+            return redirect('admin_dashboard')
+
+        username_placeholder = target_user.username
+        target_user.delete() # Executes permanent CASCADE deletion row sweep
+
+        messages.success(request, f"Successfully and permanently deleted account holder '{username_placeholder}' from the database.")
+        
+    return redirect('admin_dashboard')
