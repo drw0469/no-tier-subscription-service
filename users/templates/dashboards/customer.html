@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body class="bg-light text-dark">
+    
+    <!-- ADDED BLOCK: IMPERSONATION NOTIFICATION CONTROL BANNER -->
+     {% if request.session.is_impersonating %}
+        <div class="bg-warning text-dark text-center py-2 px-3 fw-bold border-bottom border-warning-subtle d-flex justify-content-between align-items-center shadow-sm">
+            <span class="small">
+                ⚠️ WARNING: System Administrator View — Currently viewing workspace as: 
+                <u class="font-monospace text-primary bg-white px-2 py-0.5 rounded">{{ user.username }}</u>
+            </span>
+            <a href="{% url 'stop_impersonating' %}" class="btn btn-sm btn-dark fw-bold px-3 shadow">
+                🛑 Exit & Return to Dashboard
+            </a>
+        </div>
+    {% endif %}
+
+    <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">✨ Customer Portal</span>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white">Welcome, {{ user.username }}</span>
+                <a href="{% url 'edit_own_profile' %}" class="btn btn-sm btn-light">Edit Profile</a>
+                <form action="{% url 'logout' %}" method="post" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger">Log Out</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-5">
+        <div class="card shadow-sm mx-auto" style="max-width: 800px;">
+            <div class="card-header bg-white py-3">
+                <h2 class="h4 card-title m-0">Your Subscription Status</h2>
+            </div>
+            <div class="card-body">
+                <div class="alert {% if user.subscription.has_valid_access %}alert-success{% else %}alert-danger{% endif %} m-0">
+                    <p class="h5 alert-heading mb-2">
+                        Status: {% if user.subscription.has_valid_access %}Active Account{% else %}No Active Subscription{% endif %}
+                    </p>
+                    
+                    {% if user.subscription %}
+                        <p class="mb-0">Your current annual subscription ends on: <strong>{{ user.subscription.end_date|date:"F d, Y" }}</strong></p>
+                    {% else %}
+                        <p class="mb-0">You currently do not have an active annual membership history profile linked.</p>
+                    {% endif %}
+
+                    <!-- ADDED BLOCK: Displays payment button inline only when access is missing -->
+                    {% if not user.subscription.has_valid_access %}
+                        <div class="mt-4 pt-3 border-top border-danger-subtle">
+                            <p class="small text-muted mb-2">Unlock unlimited premium features for an entire year:</p>
+                            <a href="{% url 'mock_checkout' %}" class="btn btn-danger fw-bold px-4 shadow-sm">
+                                💳 Purchase Annual Subscription Access ($99/yr)
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- PAST PAYMENTS LOGS DISPLAY BOX PANEL -->
+        <div class="card shadow-sm mx-auto mt-4" style="max-width: 800px;">
+            <div class="card-header bg-white py-3">
+                <h3 class="h5 card-title m-0 fw-bold text-muted">💳 Payment & Billing History</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Transaction Date</th>
+                            <th>Reference ID</th>
+                            <th>Amount Charged</th>
+                            <th class="text-end pe-3">Billing Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td class="ps-3 text-muted small">{{ payment.created_at|date:"F d, Y H:i" }}</td>
+                            <td class="font-monospace small text-dark fw-medium">{{ payment.transaction_id }}</td>
+                            <td class="fw-semibold text-dark">${{ payment.amount }}</td>
+                            <td class="text-end pe-3">
+                                {% if payment.status == 'completed' %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Paid</span>
+                                {% elif payment.status == 'failed' %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2">Failed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2">{{ payment.status|title }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted small italic">
+                                No past transaction records or invoice details found for this profile.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

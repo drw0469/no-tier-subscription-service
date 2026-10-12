@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Registration</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+
+    <!-- FORCE INPUT WIDENING -->
+    <style>
+        form input[type="text"], 
+        form input[type="email"], 
+        form input[type="password"],
+        form input[type="tel"] {
+            width: 750px !important;  /* Change this number to make them as long as you want */
+            max-width: 150% !important;
+            display: block !important;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+    </style>
+
+</head>
+<body class="bg-light d-flex align-items-center my-5">
+    <main class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4 fw-bold">Create Account</h2>
+                        <p class="text-center text-muted small mb-4">Register for our standard annual service subscription layer.</p>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            {% for field in form %}
+                                <div class="mb-3 text-start">
+                                    <!-- Placing the label above the field splits them into structured rows -->
+                                    <label class="form-label medium fw-bold text-dark d-block mb-1">{{ field.label }}</label>
+                                    
+                                    <div>
+                                        <div class="col-12 col-md-9 col-lg-8">
+                                            {{ field }}
+                                        </div>
+                                    </div>
+
+
+                                    {% if field.errors %}
+                                        <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            <button type="submit" class="btn btn-success w-100 mt-3 py-2 fw-semibold">Register</button>
+                        </form>
+
+
+                        <div class="text-center mt-4">
+                            <span class="small text-muted">Already configured?</span> 
+                            <a href="{% url 'login' %}" class="small text-decoration-none">Login here</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
