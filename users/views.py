@@ -57,17 +57,25 @@ def staff_dashboard(request):
     if not (request.user.is_staff_member or request.user.is_admin_member):
         raise PermissionDenied
 
+    # 1. Base Datasets (Ordered explicitly so pagination stays stable)
     all_customers = User.objects.filter(is_customer=True).order_by('username')
-    audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by')
+    # staff = User.objects.filter(is_staff_member=True)
+    all_audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by').order_by('-created_at')
 
-    # Apply identical pagination chunks to the staff dashboard
-    paginator = Paginator(all_customers, 10)
-    page_number = request.GET.get('page')
-    customers_page = paginator.get_page(page_number)
+    # 2. Customer Table Pagination Configuration (Stays exactly the same)
+    customer_paginator = Paginator(all_customers, 10) 
+    customer_page_num = request.GET.get('page') # Uses '?page='
+    customers_page = customer_paginator.get_page(customer_page_num)
 
-    return render(request, 'dashboards/staff.html', {
-        'customers': customers_page,
-        'audit_logs': audit_logs
+    # 3. ADD THIS: Audit Logs Table Pagination Configuration
+    audit_paginator = Paginator(all_audit_logs, 10) # Chunks logs into groups of 10
+    audit_page_num = request.GET.get('log_page')    # CHANGED: Uses '?log_page=' to prevent conflict
+    audit_page = audit_paginator.get_page(audit_page_num)
+
+    return render(request, 'dashboards/admin.html', {
+        'customers': customers_page, 
+        # 'staff': staff,
+        'audit_logs': audit_page  # <-- This now sends exactly 10 logs for the active page
     })
 
 @login_required
@@ -75,20 +83,25 @@ def admin_dashboard(request):
     if not request.user.is_admin_member:
         raise PermissionDenied
     
-    # 1. Gather all customers ordered by username so pagination stays stable
+    # 1. Base Datasets (Ordered explicitly so pagination stays stable)
     all_customers = User.objects.filter(is_customer=True).order_by('username')
     staff = User.objects.filter(is_staff_member=True)
-    audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by')
+    all_audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by').order_by('-created_at')
 
-    # 2. Chop the customer list into chunks of 10 records per page
-    paginator = Paginator(all_customers, 10) 
-    page_number = request.GET.get('page') # Reads ?page=X from the web browser URL
-    customers_page = paginator.get_page(page_number)
+    # 2. Customer Table Pagination Configuration (Stays exactly the same)
+    customer_paginator = Paginator(all_customers, 10) 
+    customer_page_num = request.GET.get('page') # Uses '?page='
+    customers_page = customer_paginator.get_page(customer_page_num)
+
+    # 3. ADD THIS: Audit Logs Table Pagination Configuration
+    audit_paginator = Paginator(all_audit_logs, 10) # Chunks logs into groups of 10
+    audit_page_num = request.GET.get('log_page')    # CHANGED: Uses '?log_page=' to prevent conflict
+    audit_page = audit_paginator.get_page(audit_page_num)
 
     return render(request, 'dashboards/admin.html', {
-        'customers': customers_page,  # <-- This now holds exactly 10 rows for the active page
+        'customers': customers_page, 
         'staff': staff,
-        'audit_logs': audit_logs
+        'audit_logs': audit_page  # <-- This now sends exactly 10 logs for the active page
     })
 
 
