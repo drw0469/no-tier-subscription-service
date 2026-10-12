@@ -27,5 +27,6 @@ staticfiles/
 .DS_Store
 Thumbs.db
 
+# Markdown files
+*md
 
-notes.md
