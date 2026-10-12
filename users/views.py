@@ -45,14 +45,23 @@ def customer_dashboard(request):
 
     subscription = getattr(request.user, 'subscription', None)
     payments = []
+    cancellation_log = None  # Initialize default placeholder
 
     if subscription:
         # Pull past logs sorted by latest date
         payments = subscription.payments.all()
+
+    # ADD THIS: If the customer is inactive, look up the latest system deactivation reason note
+    if not subscription or not subscription.has_valid_access:
+        cancellation_log = SubscriptionAuditLog.objects.filter(
+            customer=request.user,
+            action='deactivated'
+        ).order_by('-created_at').first()
     
     return render(request, 'dashboards/customer.html', {
         'subscription': subscription,
-        'payments': payments
+        'payments': payments,
+        'cancellation_log': cancellation_log
     })
 
 
@@ -235,6 +244,7 @@ def toggle_subscription(request, user_id):
 
         elif action_type == 'deactivate':
             subscription.is_active = False
+            subscription.end_date = timezone.now() # Blasts the date down to today
             subscription.save()
             
             SubscriptionAuditLog.objects.create(
