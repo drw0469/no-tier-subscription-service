@@ -198,7 +198,7 @@
                             {% if audit_logs.has_previous %}
                                 <li class="page-item">
                                     <!-- CRUCIAL: Keeps your current customer page view intact while moving logs -->
-                                    <a class="page-link" href="?page={{ customers.number }}&log_page={{ audit_logs.previous_page_number }}">&laquo; Prev</a>
+                                    <a class="page-link" href="?page={{ customers.number }}&log_page={{ audit_logs.previous_page_number }}#audit-section">&laquo; Prev</a>
                                 </li>
                             {% else %}
                                 <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
@@ -212,7 +212,7 @@
                                     </li>
                                 {% elif num > audit_logs.number|add:'-3' and num < audit_logs.number|add:'3' %}
                                     <li class="page-item">
-                                        <a class="page-link text-dark" href="?page={{ customers.number }}&log_page={{ num }}">{{ num }}</a>
+                                        <a class="page-link text-dark" href="?page={{ customers.number }}&log_page={{ num }}#audit-section">{{ num }}</a>
                                     </li>
                                 {% endif %}
                             {% endfor %}
@@ -220,7 +220,7 @@
                             <!-- 3. Next Page URL Trigger Navigation Link Link Link -->
                             {% if audit_logs.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ customers.number }}&log_page={{ audit_logs.next_page_number }}">Next &raquo;</a>
+                                    <a class="page-link" href="?page={{ customers.number }}&log_page={{ audit_logs.next_page_number }}#audit-section">Next &raquo;</a>
                                 </li>
                             {% else %}
                                 <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
