@@ -129,6 +129,18 @@
                                                 <input type="hidden" name="action_type" value="activate">
                                                 <div class="modal-body text-start">
                                                     <p>Are you sure you want to manually activate 1 year of premium access for account holder: <strong class="text-dark">{{ customer.username }}</strong>?</p>
+
+                                                    <!-- ADDED: DISCOUNTS DROP DOWN MENU ELEMENT CONTROL FIELD -->
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-bold text-muted">Apply Custom Discount Override Option</label>
+                                                        <select name="discount_tier" class="form-select form-select-sm">
+                                                            <option value="none" selected>Standard Billing Price Rate ($99.99/yr)</option>
+                                                            <option value="10">Apply 10% Off Promotion ($89.99/yr)</option>
+                                                            <option value="20">Apply 20% Off Promotion ($79.99/yr)</option>
+                                                            <option value="100">Complementary Access Grant / 100% Free ($0.00/yr)</option>
+                                                        </select>
+                                                    </div>
+
                                                     <div class="mb-3">
                                                         <label class="form-label small fw-bold text-muted">Reason/Notes (Mandatory Audit Requirement)</label>
                                                         <textarea name="reason_notes" class="form-control" rows="3" placeholder="e.g., Cash payment processed manually..." required></textarea>

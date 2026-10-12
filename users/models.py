@@ -93,6 +93,7 @@ class PaymentLog(models.Model):
     transaction_id = models.CharField(max_length=255, unique=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
+    discount_applied = models.CharField(max_length=100, blank=True, null=True, default="None")
 
     class Meta:
         ordering = ['-created_at']

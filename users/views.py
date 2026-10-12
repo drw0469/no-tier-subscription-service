@@ -5,11 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.utils import timezone
 
 from .forms import CustomerRegistration, ProfileEditForm, StaffUserCreationForm
 from .models import User, UserSubscription, SubscriptionAuditLog, PaymentLog
 
 import time
+from datetime import timedelta
 import uuid
 
 def register_customer(request):
@@ -168,48 +170,78 @@ def create_internal_user(request):
 
 @login_required
 def toggle_subscription(request, user_id):
-    """Allows Staff and Admins to safely toggle subscriptons with an audit trail note."""
+    """Allows Staff and Admins to toggle subscriptions with custom audit logs and discounts."""
     if not (request.user.is_staff_member or request.user.is_admin_member):
         raise PermissionDenied
 
     if request.method == "POST":
         target_user = get_object_or_404(User, id=user_id)
-        action_type = str(request.POST.get('action_type', '')).strip().lower()  # 'activate' or 'deactivate'
+        action_type = str(request.POST.get('action_type', '')).strip().lower()
         reason_note = request.POST.get('reason_notes', '').strip()
+        discount_tier = request.POST.get('discount_tier', 'none') # 'none', '10', '20', '100'
 
         if not reason_note:
             messages.error(request, "You must provide a reason note for this subscription modification.")
             return redirect('dashboard_router')
 
-        # Get or create the underlying subscriptions record instance
         subscription, created = UserSubscription.objects.get_or_create(
             user=target_user,
             defaults={'is_active': False}
         )
 
-        # Force structural tracking evaluation loops
         if action_type == 'activate':
             subscription.is_active = True
+
+            subscription.start_date = timezone.now()
+            subscription.end_date = subscription.start_date + timedelta(days=365)
+
             subscription.save()
 
-            # Generate unalterable audit row entry
+            # Calculate Adjusted Billing Math Values
+            base_price = 99.99
+            discount_text = "None"
+            final_price = base_price
+
+            if discount_tier == '10':
+                final_price = 89.99
+                discount_text = "10% Corporate Support Discount"
+            elif discount_tier == '20':
+                final_price = 79.99
+                discount_text = "20% Promotional Loyalty Discount"
+            elif discount_tier == '100':
+                final_price = 0.00
+                discount_text = "100% Free Administrative Complimentary Account"
+
+            # 1. Log a corresponding invoice receipt log with the exact price tag
+            import uuid
+            PaymentLog.objects.create(
+                subscription=subscription,
+                amount=final_price,
+                transaction_id=f"TXN-MAN-{uuid.uuid4().hex[:8].upper()}",
+                status='completed',
+                discount_applied=discount_text
+            )
+
+            # 2. Write the secure unalterable system trail audit log line
+            audit_string = f"Action: Activation. Discount applied: {discount_text}. Operator Note: {reason_note}"
             SubscriptionAuditLog.objects.create(
                 customer=target_user,
                 performed_by=request.user,
                 action='activated',
-                notes=reason_note
+                notes=audit_string
             )
-            messages.success(request, f"Successfully activated subscription access for {target_user.username}")
+            
+            messages.success(request, f"Successfully activated subscription access for {target_user.username} (Billed: ${final_price}).")
 
         elif action_type == 'deactivate':
             subscription.is_active = False
             subscription.save()
-            # Generate unalterable audit row entry
+            
             SubscriptionAuditLog.objects.create(
                 customer=target_user,
                 performed_by=request.user,
                 action='deactivated',
-                notes=reason_note
+                notes=f"Action: Revocation. Operator Note: {reason_note}"
             )
             messages.success(request, f"Successfully deactivated subscription access for {target_user.username}")
 
