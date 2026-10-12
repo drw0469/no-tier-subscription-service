@@ -3,6 +3,8 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
+
 from .forms import CustomerRegistration, ProfileEditForm, StaffUserCreationForm
 from .models import User, UserSubscription, SubscriptionAuditLog, PaymentLog
 
@@ -54,11 +56,17 @@ def customer_dashboard(request):
 def staff_dashboard(request):
     if not (request.user.is_staff_member or request.user.is_admin_member):
         raise PermissionDenied
-    customers = User.objects.filter(is_customer=True)
 
+    all_customers = User.objects.filter(is_customer=True).order_by('username')
     audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by')
+
+    # Apply identical pagination chunks to the staff dashboard
+    paginator = Paginator(all_customers, 10)
+    page_number = request.GET.get('page')
+    customers_page = paginator.get_page(page_number)
+
     return render(request, 'dashboards/staff.html', {
-        'customers': customers,
+        'customers': customers_page,
         'audit_logs': audit_logs
     })
 
@@ -67,16 +75,22 @@ def admin_dashboard(request):
     if not request.user.is_admin_member:
         raise PermissionDenied
     
-    customers = User.objects.filter(is_customer=True)
+    # 1. Gather all customers ordered by username so pagination stays stable
+    all_customers = User.objects.filter(is_customer=True).order_by('username')
     staff = User.objects.filter(is_staff_member=True)
-
     audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by')
 
+    # 2. Chop the customer list into chunks of 10 records per page
+    paginator = Paginator(all_customers, 10) 
+    page_number = request.GET.get('page') # Reads ?page=X from the web browser URL
+    customers_page = paginator.get_page(page_number)
+
     return render(request, 'dashboards/admin.html', {
-        'customers': customers,
+        'customers': customers_page,  # <-- This now holds exactly 10 rows for the active page
         'staff': staff,
         'audit_logs': audit_logs
     })
+
 
 @login_required
 def edit_profile(request, user_id=None):

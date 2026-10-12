@@ -157,6 +157,54 @@
                         {% endfor %}
                     </tbody>
                 </table>
+
+                <!-- Put this right underneath your </table> closing tag -->
+                {% if customers.has_other_pages %}
+                    <nav aria-label="Customer Directory Pagination" class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
+                        <!-- Page Tracking Metadata Information Label -->
+                        <span class="small text-muted">
+                            Showing entries <strong class="text-dark">{{ customers.start_index }}</strong> to <strong class="text-dark">{{ customers.end_index }}</strong> of <strong class="text-dark">{{ customers.paginator.count }}</strong> total customers
+                        </span>
+
+                        <!-- Interactive Bootstrap Pagination Navigation Button Row Link Chain -->
+                        <ul class="pagination pagination-sm m-0 shadow-sm">
+                            
+                            <!-- 1. Previous Page Navigation Link Element -->
+                            {% if customers.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ customers.previous_page_number }}" aria-label="Previous">&laquo; Prev</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
+                            {% endif %}
+
+                            <!-- 2. Individual Numbered Target Page Row Links Chain Matrix Loops -->
+                            {% for num in customers.paginator.page_range %}
+                                {% if customers.number == num %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span class="page-link bg-primary border-primary fw-bold">{{ num }}</span>
+                                    </li>
+                                {% elif num > customers.number|add:'-3' and num < customers.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link text-dark" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            <!-- 3. Next Page Navigation Link Element -->
+                            {% if customers.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ customers.next_page_number }}" aria-label="Next">Next &raquo;</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+                            {% endif %}
+
+                        </ul>
+                    </nav>
+                {% endif %}
+
+                
             </div>
         </div>
 
