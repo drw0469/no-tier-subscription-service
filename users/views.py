@@ -45,23 +45,23 @@ def customer_dashboard(request):
 
     subscription = getattr(request.user, 'subscription', None)
     payments = []
-    cancellation_log = None  # Initialize default placeholder
-
+    
     if subscription:
-        # Pull past logs sorted by latest date
         payments = subscription.payments.all()
-
-    # ADD THIS: If the customer is inactive, look up the latest system deactivation reason note
-    if not subscription or not subscription.has_valid_access:
-        cancellation_log = SubscriptionAuditLog.objects.filter(
-            customer=request.user,
-            action='deactivated'
-        ).order_by('-created_at').first()
+    
+    # CHANGED: Fetch EVERY status modification logged for this user across time
+    full_status_history = SubscriptionAuditLog.objects.filter(
+        customer=request.user
+    ).order_by('-created_at') # Newest timelines always load at the top
+    
+    # Grab the current active deactivation log row if they are currently off
+    cancellation_log = full_status_history.filter(action='deactivated').first() if (not subscription or not subscription.has_valid_access) else None
     
     return render(request, 'dashboards/customer.html', {
         'subscription': subscription,
         'payments': payments,
-        'cancellation_log': cancellation_log
+        'cancellation_log': cancellation_log,
+        'full_status_history': full_status_history  # <-- Pass the full unalterable timeline bundle
     })
 
 
