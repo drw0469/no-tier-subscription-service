@@ -4,340 +4,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <!-- Local Bootstrap CSS -->
+    <title>Admin System Suite</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        /* (Inject the Step 1 CSS Style properties template list block here) */
+        :root { --sidebar-bg: #0f172a; --sidebar-hover: #1e293b; --canvas-bg: #f8fafc; --text-main: #334155; }
+        body { background-color: var(--canvas-bg) !important; color: var(--text-main) !important; font-family: system-ui, -apple-system, sans-serif; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar-panel { width: 260px; background-color: var(--sidebar-bg); color: #f1f5f9; flex-shrink: 0; }
+        .main-content-panel { flex-grow: 1; padding: 2.5rem; overflow-y: auto; }
+        .premium-card { background: #ffffff; border: 1px solid #e2e8f0 !important; border-radius: 12px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important; }
+        .badge-pill-success { background-color: #f0fdf4 !important; color: #16a34a !important; border: 1px solid #bbf7d0 !important; }
+        .badge-pill-danger { background-color: #fef2f2 !important; color: #dc2626 !important; border: 1px solid #fecaca !important; }
+        .table th { font-weight: 600 !important; text-transform: uppercase; font-size: 0.75rem !important; letter-spacing: 0.05em; color: #64748b !important; background-color: #f8fafc !important; }
+    </style>
 </head>
-<body class="bg-light text-dark">
-    <nav class="navbar navbar-dark bg-dark shadow-sm mb-5">
-        <div class="container-fluid">
-            <div class="d-flex align-items-center gap-3">
-                <span class="navbar-brand mb-0 h1 text-warning">👑 Admin Console</span>
-                <a href="/admin/" target="_blank" class="btn btn-sm btn-outline-warning font-monospace text-uppercase">CORE DJANGO DATABASE BACKEND →</a>
+<body>
+
+    <div class="app-container">
+        
+        <!-- ==========================================================
+             SAAS ENTERPRISE LEFT SIDEBAR PANEL
+             ========================================================== -->
+        <aside class="sidebar-panel d-flex flex-column p-3 justify-content-between">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-4 px-2">
+                    <span class="fs-4">⚡</span>
+                    <h1 class="h5 m-0 fw-bold tracking-tight text-white">Platform Suite</h1>
+                </div>
+                <hr class="text-secondary opacity-25">
+                <ul class="nav nav-pills flex-column mb-auto gap-1">
+                    <li class="nav-item">
+                        <a href="{% url 'admin_dashboard' %}" class="nav-link text-white bg-secondary bg-opacity-25 fw-semibold small py-2 px-3 rounded-3">
+                            👥 Customer Accounts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'audit_log_view' %}" class="nav-link text-white-50 hover-sidebar fw-medium small py-2 px-3 rounded-3">
+                            📋 System Action Audit Logs
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <span class="text-white-50">System Root: {{ user.username }}</span>
-                <a href="{% url 'audit_log_view' %}" class="btn btn-sm btn-outline-light fw-medium">📋 System Audit Logs</a>
-                <a href="{% url 'create_internal_user' %}" class="btn btn-sm btn-warning fw-semibold">+ Create Staff/Admin</a>
-                <a href="{% url 'edit_own_profile' %}" class="btn btn-sm btn-secondary">Edit My Profile</a>
-                <form action="{% url 'logout' %}" method="post" class="m-0">
+            
+            <!-- Operator Account Profile Logout Session Widget Area -->
+            <div class="bg-dark bg-opacity-50 p-2.5 rounded-3 border border-secondary border-opacity-10 text-start">
+                <p class="small m-0 fw-bold text-white truncate">{{ user.username }}</p>
+                <span class="small text-white-50" style="font-size: 0.7rem;">Master Root Admin</span>
+                <form action="{% url 'logout' %}" method="post" class="mt-2 m-0">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger">Log Out</button>
+                    <button type="submit" class="btn btn-sm btn-danger w-100 fw-semibold py-1 small">Sign Out</button>
                 </form>
             </div>
-        </div>
-    </nav>
+        </aside>
 
-    {% if messages %}
-    <div class="container mt-3">
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <!-- ==========================================================
+             MAIN CANVAS CONTENT AREA WORKSPACE
+             ========================================================== -->
+        <main class="main-content-panel">
+            
+            <!-- Global Action Workspace Top Headers Row -->
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-light">
+                <div>
+                    <h2 class="h3 fw-bold m-0 text-dark">All Customer Accounts</h2>
+                    <p class="small text-muted m-0">Review subscription permissions status configurations, apply discounts, or purge data records.</p>
+                </div>
+                <div>
+                    <a href="{% url 'create_internal_user' %}" class="btn btn-primary fw-semibold px-3 shadow-sm rounded-3" style="background-color: #4f46e5; border-color: #4f46e5;">
+                        ➕ Provision Internal User
+                    </a>
+                </div>
             </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
-    <main class="container my-4">
-        <!-- Customers Card Block -->
-        <div class="card shadow-sm mb-5">
-            <div class="card-header bg-white py-3">
-                <h2 class="h5 text-dark m-0 fw-bold">All Customer Accounts</h2>
-            </div>
-            <div class="table-responsive">
+            <!-- Dynamic Framework System Alert Notices -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show premium-card border-0 mb-4 p-3" role="alert">
+                        <span class="small fw-medium">{{ message }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
 
-                <!-- Search bar layout block: Place right inside card-body above the customer table -->
-                <div class="mb-4">
-                    <form method="get" class="row g-2">
-                        
-                        <div class="col-md-8 col-sm-9">
-                            <div class="input-group">
-                                <span class="input-group-text bg-white text-muted">🔍</span>
-                                <input type="text" name="search" class="form-control" placeholder="Search by username, name, or email..." value="{{ search_query }}">
-                            </div>
+            <!-- Table Panel Wrapper Card -->
+            <div class="card premium-card border-0 mb-5">
+                <div class="p-3 border-bottom bg-light bg-opacity-25">
+                    <form method="get" class="row g-2 m-0">
+                        <div class="col-md-9">
+                            <input type="text" name="search" class="form-control form-control-sm border-light-subtle rounded-3" placeholder="Filter rows instantly by keyword search strings..." value="{{ search_query|default:'' }}">
                         </div>
-                        <div class="col-md-4 col-sm-3 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary fw-semibold flex-grow-1">Filter Records</button>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-sm btn-dark flex-grow-1 font-weight-semibold rounded-3">Search</button>
                             {% if search_query %}
-                                <a href="?{% if request.GET.log_page %}log_page={{ request.GET.log_page }}{% endif %}" class="btn btn-outline-secondary">Clear</a>
+                                <a href="{% url 'admin_dashboard' %}" class="btn btn-sm btn-outline-secondary rounded-3">Clear</a>
                             {% endif %}
                         </div>
                     </form>
                 </div>
 
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">User</th>
-                            <th>Email</th>
-                            <th>Subscription</th>
-                            <th class="text-end pe-3">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for customer in customers %}
-                        <tr>
-                            <td class="ps-3 fw-semibold">{{ customer.username }}</td>
-                            <td>{{ customer.email }}</td>
-                            <td>
-                                {% if customer.subscription.has_valid_access %}
-                                    <span class="text-success fw-bold">Active</span>
-                                {% else %}
-                                    <span class="text-danger">Inactive</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-end pe-3">
-
-                                
-                                <!-- Table Action Column Buttons -->
-                                <div class="d-flex justify-content-end gap-2">
-
-                                    <!-- ADDED: Impersonation Trigger Button Link -->
-                                    <a href="{% url 'impersonate_user' customer.id %}" class="btn btn-sm btn-outline-primary fw-medium">
-                                        🔍 Login As
-                                    </a>
-
-                                    <!-- Place this inside your admin.html table actions column next to your Edit links -->
-                                    <form action="{% url 'admin_delete_user' customer.id %}" method="post" class="d-inline" onsubmit="return confirm('🚨 CRITICAL WARNING: Are you completely sure you want to permanently delete this account? This will permanently erase all associated subscription timelines and billing transaction log entries.');">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                    </form>
-
-                                    
-                                    <a href="{% url 'edit_user_profile' customer.id %}" class="btn btn-sm btn-outline-dark">Modify Account</a>
-                                    
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3 py-3">Account User</th>
+                                <th>Email Identity Address</th>
+                                <th>Subscription State</th>
+                                <th class="text-end pe-3">Workspace Management Controls</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in customers %}
+                            <tr>
+                                <td class="ps-3 py-3">
+                                    <div class="fw-semibold text-dark">{{ customer.username }}</div>
+                                    <span class="text-muted font-monospace small" style="font-size: 0.7rem;">ID: #{{ customer.id }}</span>
+                                </td>
+                                <td class="text-secondary small">{{ customer.email }}</td>
+                                <td>
                                     {% if customer.subscription.has_valid_access %}
-                                        <!-- Deactivate Modal Trigger Trigger Button -->
-                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deactivateModal{{ customer.id }}">
-                                            Deactivate
-                                        </button>
+                                        <span class="badge badge-pill-success rounded-pill px-2.5 py-1 small fw-semibold">Active Access</span>
                                     {% else %}
-                                        <!-- Activate Modal Trigger Trigger Button -->
-                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#activateModal{{ customer.id }}">
-                                            Activate Access
-                                        </button>
+                                        <span class="badge badge-pill-danger rounded-pill px-2.5 py-1 small fw-semibold">Lapsed / Off</span>
                                     {% endif %}
-                                </div>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="d-inline-flex gap-1.5">
+                                        <a href="{% url 'impersonate_user' customer.id %}" class="btn btn-xs btn-outline-secondary font-weight-medium rounded-2 py-1 px-2 small" style="font-size:0.75rem;">🔍 View As</a>
+                                        <a href="{% url 'edit_user_profile' customer.id %}" class="btn btn-xs btn-outline-dark font-weight-medium rounded-2 py-1 px-2 small" style="font-size:0.75rem;">Modify</a>
+                                        
+                                        {% if customer.subscription.has_valid_access %}
+                                            <button type="button" class="btn btn-xs btn-danger rounded-2 py-1 px-2 small" style="font-size:0.75rem;" data-bs-toggle="modal" data-bs-target="#deactivateModal{{ customer.id }}">Suspend</button>
+                                        {% else %}
+                                            <button type="button" class="btn btn-xs btn-success rounded-2 py-1 px-2 small" style="font-size:0.75rem;" data-bs-toggle="modal" data-bs-target="#activateModal{{ customer.id }}">Activate</button>
+                                        {% endif %}
 
-                                <!-- ==========================================================
-                                    ACTIVATE MODAL POPUP CONTAINER
-                                    ========================================================== -->
-                                <div class="modal fade" id="activateModal{{ customer.id }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-success text-white">
-                                                <h5 class="modal-title fw-bold">Confirm Account Activation</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        <form action="{% url 'admin_delete_user' customer.id %}" method="post" class="m-0 ms-1 d-inline" onsubmit="return confirm('Permanently scrub this customer entry file?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-xs btn-outline-danger rounded-2 py-1 px-2 small" style="font-size:0.75rem;">Purge</button>
+                                        </form>
+                                    </div>
+
+                                    <!-- INJECT MODALS MANUALLY HERE RIGHT BELOW CONTROLS AS WE DESIGNED PREVIOUSLY -->
+                                    <!-- (Your existing activate/deactivate dropdown select modals markup blocks live here unchanged) -->
+                                </td>
+                            </tr>
+
+                                    <!-- ==========================================================
+                                         1. ACTIVATE MODAL POPUP (WITH THE NEW DISCOUNTS SELECT)
+                                         ========================================================== -->
+                                    <div class="modal fade" id="activateModal{{ customer.id }}" tabindex="-1" aria-labelledby="activateModalLabel{{ customer.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content premium-card border-0 text-start">
+                                                <div class="modal-header bg-dark text-white border-0 py-3">
+                                                    <h5 class="modal-title fw-bold" id="activateModalLabel{{ customer.id }}">Confirm Account Activation</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                
+                                                <form action="{% url 'toggle_subscription' customer.id %}" method="post">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action_type" value="activate">
+                                                    
+                                                    <div class="modal-body p-4">
+                                                        <p class="text-dark small">Are you sure you want to manually activate 1 year of premium access for account holder: <strong class="text-dark">{{ customer.username }}</strong>?</p>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label small fw-bold text-muted">Apply Custom Discount Override Option</label>
+                                                            <select name="discount_tier" class="form-select form-select-sm border-light-subtle rounded-3">
+                                                                <option value="none" selected>Standard Billing Price Rate ($99.99/yr)</option>
+                                                                <option value="10">Apply 10% Off Promotion ($89.99/yr)</option>
+                                                                <option value="20">Apply 20% Off Promotion ($79.99/yr)</option>
+                                                                <option value="100">Complimentary Access Grant / 100% Free ($0.00/yr)</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label small fw-bold text-muted">Reason/Notes (Mandatory Audit Requirement)</label>
+                                                            <textarea name="reason_notes" class="form-control border-light-subtle rounded-3" rows="3" placeholder="e.g., Cash payment processed manually..." required></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="modal-footer bg-light bg-opacity-50 border-0 p-3">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-sm btn-dark fw-semibold rounded-3 px-3">Confirm & Activate</button>
+                                                    </div>
+                                                </form>
                                             </div>
-                                            <form action="{% url 'toggle_subscription' customer.id %}" method="post">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action_type" value="activate">
-                                                <div class="modal-body text-start">
-                                                    <p>Are you sure you want to manually activate 1 year of premium access for account holder: <strong class="text-dark">{{ customer.username }}</strong>?</p>
-
-                                                    <!-- ADDED: DISCOUNTS DROP DOWN MENU ELEMENT CONTROL FIELD -->
-                                                    <div class="mb-3">
-                                                        <label class="form-label small fw-bold text-muted">Apply Custom Discount Override Option</label>
-                                                        <select name="discount_tier" class="form-select form-select-sm">
-                                                            <option value="none" selected>Standard Billing Price Rate ($99.99/yr)</option>
-                                                            <option value="10">Apply 10% Off Promotion ($89.99/yr)</option>
-                                                            <option value="20">Apply 20% Off Promotion ($79.99/yr)</option>
-                                                            <option value="100">Complementary Access Grant / 100% Free ($0.00/yr)</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label small fw-bold text-muted">Reason/Notes (Mandatory Audit Requirement)</label>
-                                                        <textarea name="reason_notes" class="form-control" rows="3" placeholder="e.g., Cash payment processed manually..." required></textarea>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn btn-success fw-bold">Confirm & Activate</button>
-                                                </div>
-                                            </form>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- ==========================================================
-                                    DEACTIVATE MODAL POPUP CONTAINER
-                                    ========================================================== -->
-                                <div class="modal fade" id="deactivateModal{{ customer.id }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-danger text-white">
-                                                <h5 class="modal-title fw-bold">Confirm Account Deactivation</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <form action="{% url 'toggle_subscription' customer.id %}" method="post">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action_type" value="deactivate">
-                                                <div class="modal-body text-start">
-                                                    <p class="text-danger fw-semibold">Warning: This action revokes access permissions immediately for user: {{ customer.username }}.</p>
-                                                    <div class="mb-3">
-                                                        <label class="form-label small fw-bold text-muted">Reason/Notes (Mandatory Audit Requirement)</label>
-                                                        <textarea name="reason_notes" class="form-control" rows="3" placeholder="e.g., Customer requested a refund..." required></textarea>
+                                    <!-- ==========================================================
+                                         2. DEACTIVATE MODAL POPUP CONTAINER
+                                         ========================================================== -->
+                                    <div class="modal fade" id="deactivateModal{{ customer.id }}" tabindex="-1" aria-labelledby="deactivateModalLabel{{ customer.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content premium-card border-0 text-start">
+                                                <div class="modal-header bg-danger text-white border-0 py-3">
+                                                    <h5 class="modal-title fw-bold" id="deactivateModalLabel{{ customer.id }}">Confirm Account Deactivation</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                
+                                                <form action="{% url 'toggle_subscription' customer.id %}" method="post">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action_type" value="deactivate">
+                                                    
+                                                    <div class="modal-body p-4">
+                                                        <p class="text-danger small fw-semibold">Warning: This action revokes access permissions immediately for user: {{ customer.username }}.</p>
+                                                        <div class="mb-3">
+                                                            <label class="form-label small fw-bold text-muted">Reason/Notes (Mandatory Audit Requirement)</label>
+                                                            <textarea name="reason_notes" class="form-control border-light-subtle rounded-3" rows="3" placeholder="e.g., Customer requested a refund..." required></textarea>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn btn-danger fw-bold">Revoke Access</button>
-                                                </div>
-                                            </form>
+                                                    
+                                                    <div class="modal-footer bg-light bg-opacity-50 border-0 p-3">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-sm btn-danger fw-semibold rounded-3 px-3">Revoke Access</button>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                                
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="4" class="text-center py-4 text-muted">No Customers.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
 
-                <!-- REPLACEMENT PAGINATION BLOCK (PLACE UNDER THE FIRST </table> TAG) -->
-                {% if customers.has_other_pages %}
-                    <nav aria-label="Customer Directory Pagination" class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
-                        <!-- Page Tracking Metadata -->
-                        <span class="small text-muted">
-                            Showing entries <strong class="text-dark">{{ customers.start_index }}</strong> to <strong class="text-dark">{{ customers.end_index }}</strong> of <strong class="text-dark">{{ customers.paginator.count }}</strong> total customers
-                        </span>
-
-                        <!-- Search-Preserving Pagination Buttons -->
-                        <ul class="pagination pagination-sm m-0 shadow-sm">
-                            
-                            <!-- Prev Button -->
-                            {% if customers.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ customers.previous_page_number }}&search={{ search_query }}">&laquo; Prev</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
-                            {% endif %}
-
-                            <!-- UPDATE THE PAGINATION LINKS MATRIX LOOP IN BOTH DASHBOARD TEMPLATES -->
-                            {% for num in customers.paginator.page_range %}
-                                {% if customers.number == num %}
-                                    <li class="page-item active"><span class="page-link bg-primary border-primary fw-bold">{{ num }}</span></li>
-                                {% elif num > customers.number|add:'-3' and num < customers.number|add:'3' %}
-                                    <!-- ADDED: &search={{ search_query }} to lock filtering down -->
-                                    <li class="page-item"><a class="page-link text-dark" href="?page={{ num }}&search={{ search_query }}">{{ num }}</a></li>
-                                {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted small italic">No matching user accounts exist in the current filtered partition pool view.</td>
+                            </tr>
                             {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
 
-
-                            <!-- Next Button -->
-                            {% if customers.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ customers.next_page_number }}&search={{ search_query }}">Next &raquo;</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
-                            {% endif %}
-
-                        </ul>
-                    </nav>
+                {% if customers.has_other_pages %}
+                <footer class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">Showing entries <strong>{{ customers.start_index }}</strong> to <strong>{{ customers.end_index }}</strong> of <strong>{{ customers.paginator.count }}</strong> total profiles</span>
+                    <ul class="pagination pagination-sm m-0 gap-1">
+                        {% if customers.has_previous %}
+                            <li class="page-item"><a class="page-link rounded border-light text-dark shadow-none" href="?page={{ customers.previous_page_number }}&search={{ search_query }}">&laquo;</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link rounded border-primary bg-dark text-white fw-bold shadow-none">{{ customers.number }}</span></li>
+                        {% if customers.has_next %}
+                            <li class="page-item"><a class="page-link rounded border-light text-dark shadow-none" href="?page={{ customers.next_page_number }}&search={{ search_query }}">&raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </footer>
                 {% endif %}
-
-
-
             </div>
-        </div>
-
-        <!-- Staff Card Block -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-white py-3">
 
             <!-- ==========================================================
-                NEW BLOCK: REGISTERED CORPORATE EXECUTIVES ROSTER
-                ========================================================== -->
-                <section class="bg-white p-6 rounded-lg shadow-sm mt-5 card border-0 mb-4">
-                    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                        <h3 class="h5 text-dark m-0 fw-bold text-secondary">📊 Active Corporate Executive Members</h3>
-                        <span class="badge bg-dark font-monospace text-uppercase" style="font-size: 0.65rem;">Read-Only Financial Access</span>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">Username</th>
-                                    <th>Full Name</th>
-                                    <th>Email Address</th>
-                                    <th class="text-end pe-3">Account Security Permissions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for partner in executives %}
-                                <tr>
-                                    <td class="ps-3 fw-bold text-dark font-monospace">{{ partner.username }}</td>
-                                    <td class="text-secondary">{{ partner.get_full_name|default:"Corporate Partner" }}</td>
-                                    <td class="text-muted small">{{ partner.email }}</td>
-                                    <td class="text-end pe-3">
-
-                                        <form action="{% url 'admin_delete_user' partner.id %}" method="post" class="d-inline" onsubmit="return confirm('Permanently delete this executive account?');">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                        </form>
-
-                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1 text-uppercase fw-bold" style="font-size: 0.65rem;">
-                                            Financial Analytics View Only
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted small italic">
-                                        No corporate stakeholder or executive partner profiles have been onboarded yet.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-
-                <h2 class="h5 text-dark m-0 fw-bold">Active Staff Accounts</h2>
+                 ACTIVE PARTNERS / EXECUTIVES SECTION 
+                 ========================================================== -->
+            <div class="d-flex justify-content-between align-items-center mt-5 mb-4 pb-2 border-bottom border-light">
+                <div>
+                    <h2 class="h4 fw-bold m-0 text-dark">Active Corporate Executive Members</h2>
+                    <p class="small text-muted m-0">Stakeholders with read-only access to master accounting ledgers.</p>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">Staff Identity</th>
-                            <th>Email Connected</th>
-                            <th>System Permissions</th>
-                            <th class="text-end pe-3">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for member in staff %}
-                        <tr>
-                            <td class="ps-3 fw-semibold">{{ member.username }}</td>
-                            <td>{{ member.email }}</td>
-                            <td><span class="badge bg-secondary font-monospace">STAFF_ROLE</span></td>
-                            <td class="text-end pe-3">
 
-                                <form action="{% url 'admin_delete_user' member.id %}" method="post" class="d-inline" onsubmit="return confirm('🚨 CRITICAL WARNING: Are you completely sure you want to permanently delete this account? This will permanently erase all associated subscription timelines and billing transaction log entries.');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                </form>
-
-                                <a href="{% url 'edit_user_profile' member.id %}" class="btn btn-sm btn-outline-dark">Modify Account</a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="4" class="text-center py-4 text-muted">No active internal staff profiles configured.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="card premium-card border-0 mb-5">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3 py-3">Username</th>
+                                <th>Email Address</th>
+                                <th class="text-end pe-3">Management</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for partner in executives %}
+                            <tr>
+                                <td class="ps-3 py-3 fw-semibold text-dark">{{ partner.username }}</td>
+                                <td class="text-secondary small">{{ partner.email }}</td>
+                                <td class="text-end pe-3">
+                                    <form action="{% url 'admin_delete_user' partner.id %}" method="post" class="m-0 d-inline" onsubmit="return confirm('Permanently scrub this executive entry file?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-xs btn-outline-danger rounded-2 py-1 px-2 small" style="font-size:0.75rem;">Purge</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted small italic">No corporate stakeholder or executive partner profiles onboarded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-    </main>
 
-    <!-- Local Bootstrap JS Bundle -->
+            <!-- ==========================================================
+                 ACTIVE STAFF ACCOUNTS SECTION 
+                 ========================================================== -->
+            <div class="d-flex justify-content-between align-items-center mt-5 mb-4 pb-2 border-bottom border-light">
+                <div>
+                    <h2 class="h4 fw-bold m-0 text-dark">Active Staff Accounts</h2>
+                    <p class="small text-muted m-0">Internal system users responsible for day-to-day desk operations.</p>
+                </div>
+            </div>
+
+            <div class="card premium-card border-0 mb-5">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3 py-3">Username</th>
+                                <th>Email Address</th>
+                                <th class="text-end pe-3">Management</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in staff %}
+                            <tr>
+                                <td class="ps-3 py-3 fw-semibold text-dark">{{ member.username }}</td>
+                                <td class="text-secondary small">{{ member.email }}</td>
+                                <td class="text-end pe-3">
+                                    <form action="{% url 'admin_delete_user' member.id %}" method="post" class="m-0 d-inline" onsubmit="return confirm('Permanently scrub this staff entry file?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-xs btn-outline-danger rounded-2 py-1 px-2 small" style="font-size:0.75rem;">Purge</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted small italic">No standard staff accounts created yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>
+
