@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 from .forms import CustomerRegistration, ProfileEditForm, StaffUserCreationForm
 from .models import User, UserSubscription, SubscriptionAuditLog, PaymentLog
@@ -52,56 +53,81 @@ def customer_dashboard(request):
         'payments': payments
     })
 
-@login_required
-def staff_dashboard(request):
-    if not (request.user.is_staff_member or request.user.is_admin_member):
-        raise PermissionDenied
-
-    # 1. Base Datasets (Ordered explicitly so pagination stays stable)
-    all_customers = User.objects.filter(is_customer=True).order_by('username')
-    # staff = User.objects.filter(is_staff_member=True)
-    all_audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by').order_by('-created_at')
-
-    # 2. Customer Table Pagination Configuration (Stays exactly the same)
-    customer_paginator = Paginator(all_customers, 10) 
-    customer_page_num = request.GET.get('page') # Uses '?page='
-    customers_page = customer_paginator.get_page(customer_page_num)
-
-    # 3. ADD THIS: Audit Logs Table Pagination Configuration
-    audit_paginator = Paginator(all_audit_logs, 10) # Chunks logs into groups of 10
-    audit_page_num = request.GET.get('log_page')    # CHANGED: Uses '?log_page=' to prevent conflict
-    audit_page = audit_paginator.get_page(audit_page_num)
-
-    return render(request, 'dashboards/admin.html', {
-        'customers': customers_page, 
-        # 'staff': staff,
-        'audit_logs': audit_page  # <-- This now sends exactly 10 logs for the active page
-    })
 
 @login_required
 def admin_dashboard(request):
     if not request.user.is_admin_member:
         raise PermissionDenied
     
-    # 1. Base Datasets (Ordered explicitly so pagination stays stable)
-    all_customers = User.objects.filter(is_customer=True).order_by('username')
+    # 1. Fetch search query from URL parameter (?search=xyz)
+    search_query = request.GET.get('search', '').strip()
+    
+    # 2. Base Query logic
+    customer_query = User.objects.filter(is_customer=True)
+    
+    # 3. Apply Multi-Field Database Filter if search query exists
+    if search_query:
+        customer_query = customer_query.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query)
+        )
+    
+    # Order records so pagination remains deterministic
+    all_customers = customer_query.order_by('username')
     staff = User.objects.filter(is_staff_member=True)
     all_audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by').order_by('-created_at')
 
-    # 2. Customer Table Pagination Configuration (Stays exactly the same)
+    # 4. Customer Pagination Chunking
     customer_paginator = Paginator(all_customers, 10) 
-    customer_page_num = request.GET.get('page') # Uses '?page='
+    customer_page_num = request.GET.get('page')
     customers_page = customer_paginator.get_page(customer_page_num)
 
-    # 3. ADD THIS: Audit Logs Table Pagination Configuration
-    audit_paginator = Paginator(all_audit_logs, 10) # Chunks logs into groups of 10
-    audit_page_num = request.GET.get('log_page')    # CHANGED: Uses '?log_page=' to prevent conflict
+    # 5. Audit Log Pagination Chunking
+    audit_paginator = Paginator(all_audit_logs, 10)
+    audit_page_num = request.GET.get('log_page')
     audit_page = audit_paginator.get_page(audit_page_num)
 
     return render(request, 'dashboards/admin.html', {
         'customers': customers_page, 
         'staff': staff,
-        'audit_logs': audit_page  # <-- This now sends exactly 10 logs for the active page
+        'audit_logs': audit_page,
+        'search_query': search_query  # <-- Pass search string back to keep input field filled
+    })
+
+
+@login_required
+def staff_dashboard(request):
+    if not (request.user.is_staff_member or request.user.is_admin_member):
+        raise PermissionDenied
+        
+    search_query = request.GET.get('search', '').strip()
+    customer_query = User.objects.filter(is_customer=True)
+    
+    if search_query:
+        customer_query = customer_query.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query)
+        )
+        
+    all_customers = customer_query.order_by('username')
+    all_audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by').order_by('-created_at')
+
+    customer_paginator = Paginator(all_customers, 10)
+    customer_page_num = request.GET.get('page')
+    customers_page = customer_paginator.get_page(customer_page_num)
+
+    audit_paginator = Paginator(all_audit_logs, 10)
+    audit_page_num = request.GET.get('log_page')
+    audit_page = audit_paginator.get_page(audit_page_num)
+
+    return render(request, 'dashboards/staff.html', {
+        'customers': customers_page,
+        'audit_logs': audit_page,
+        'search_query': search_query
     })
 
 
