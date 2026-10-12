@@ -77,22 +77,16 @@ def admin_dashboard(request):
     # Order records so pagination remains deterministic
     all_customers = customer_query.order_by('username')
     staff = User.objects.filter(is_staff_member=True)
-    all_audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by').order_by('-created_at')
 
     # 4. Customer Pagination Chunking
     customer_paginator = Paginator(all_customers, 10) 
     customer_page_num = request.GET.get('page')
     customers_page = customer_paginator.get_page(customer_page_num)
 
-    # 5. Audit Log Pagination Chunking
-    audit_paginator = Paginator(all_audit_logs, 10)
-    audit_page_num = request.GET.get('log_page')
-    audit_page = audit_paginator.get_page(audit_page_num)
 
     return render(request, 'dashboards/admin.html', {
         'customers': customers_page, 
         'staff': staff,
-        'audit_logs': audit_page,
         'search_query': search_query  # <-- Pass search string back to keep input field filled
     })
 
@@ -114,19 +108,13 @@ def staff_dashboard(request):
         )
         
     all_customers = customer_query.order_by('username')
-    all_audit_logs = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by').order_by('-created_at')
 
     customer_paginator = Paginator(all_customers, 10)
     customer_page_num = request.GET.get('page')
     customers_page = customer_paginator.get_page(customer_page_num)
 
-    audit_paginator = Paginator(all_audit_logs, 10)
-    audit_page_num = request.GET.get('log_page')
-    audit_page = audit_paginator.get_page(audit_page_num)
-
     return render(request, 'dashboards/staff.html', {
         'customers': customers_page,
-        'audit_logs': audit_page,
         'search_query': search_query
     })
 
@@ -228,6 +216,38 @@ def toggle_subscription(request, user_id):
             messages.success(request, f"Successfully deactivated subscription access for {target_user.username}")
 
     return redirect('dashboard_router')
+
+
+
+@login_required
+def audit_log_view(request):
+    """Dedicated, searchable audit trail log directory for Staff and Admins."""
+    if not (request.user.is_staff_member or request.user.is_admin_member):
+        raise PermissionDenied
+
+    # 1. Capture search query specifically filtering target customers
+    search_query = request.GET.get('search', '').strip()
+    audit_query = SubscriptionAuditLog.objects.all().select_related('customer', 'performed_by')
+
+    if search_query:
+        audit_query = audit_query.filter(
+            Q(customer__username__icontains=search_query) |
+            Q(performed_by__username__icontains=search_query) |
+            Q(notes__icontains=search_query)
+        )
+
+    # 2. Order by latest logs first
+    ordered_logs = audit_query.order_by('-created_at')
+
+    # 3. Simple standalone pagination (15 records per page)
+    paginator = Paginator(ordered_logs, 15)
+    page_number = request.GET.get('page')
+    logs_page = paginator.get_page(page_number)
+
+    return render(request, 'admin/audit_logs.html', {
+        'audit_logs': logs_page,
+        'search_query': search_query
+    })
 
 
 

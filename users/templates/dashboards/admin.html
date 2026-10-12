@@ -17,6 +17,7 @@
             </div>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-white-50">System Root: {{ user.username }}</span>
+                <a href="{% url 'audit_log_view' %}" class="btn btn-sm btn-outline-light fw-medium">📋 System Audit Logs</a>
                 <a href="{% url 'create_internal_user' %}" class="btn btn-sm btn-warning fw-semibold">+ Create Staff/Admin</a>
                 <a href="{% url 'edit_own_profile' %}" class="btn btn-sm btn-secondary">Edit My Profile</a>
                 <form action="{% url 'logout' %}" method="post" class="m-0">
@@ -266,105 +267,6 @@
                 </table>
             </div>
         </div>
-
-        <!-- ==========================================================
-            SYSTEM SUBSCRIPTION AUDIT TRAIL LOG HISTORY PANEL
-            ========================================================== -->
-        <section class="bg-white p-6 rounded-lg shadow-sm mt-5 card">
-            <div class="card-header bg-light py-3 border-bottom-0">
-                <h2 class="h5 text-dark m-0 fw-bold text-secondary" id="audit-section">📋 Subscription System Audit Trail Logs</h2>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">Timestamp Date</th>
-                            <th>Operator Account</th>
-                            <th>Action Type Executed</th>
-                            <th>Target Customer</th>
-                            <th class="w-50">Reason Notes / Explanations Given</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y text-sm text-muted">
-                        {% for log in audit_logs %}
-                        <tr>
-                            <td class="ps-3 font-monospace small">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
-                            <td>
-                                <span class="fw-semibold text-dark">
-                                    {{ log.performed_by.username|default:"System" }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if log.action == 'activated' %}
-                                    <span class="badge bg-success text-uppercase tracking-wider px-2" style="font-size: 0.65rem;">Activated</span>
-                                {% else %}
-                                    <span class="badge bg-danger text-uppercase tracking-wider px-2" style="font-size: 0.65rem;">Deactivated</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-dark fw-medium">{{ log.customer.username }}</td>
-                            <td class="text-wrap bg-light-subtle small border-start ps-3 italic">
-                                "{{ log.notes|default:"No explanation notice provided." }}"
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted small italic">
-                                No system modifications or toggle override operations have been logged yet.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-
-                <!-- ============================================================================== -->
-                <!-- ADDED: INDEPENDENT PAGINATION FOR THE SYSTEM AUDIT TRAIL LOGS SECTION         -->
-                <!-- ============================================================================== -->
-                {% if audit_logs.has_other_pages %}
-                    <nav aria-label="System Audit Logs Pagination" class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
-                        <!-- Metadata Page Counter Tracking Tracker -->
-                        <span class="small text-muted">
-                            Showing logs <strong class="text-dark">{{ audit_logs.start_index }}</strong> to <strong class="text-dark">{{ audit_logs.end_index }}</strong> of <strong class="text-dark">{{ audit_logs.paginator.count }}</strong> total system actions
-                        </span>
-
-                        <ul class="pagination pagination-sm m-0 shadow-sm">
-                            <!-- 1. Previous Page URL Trigger Navigation Link Link Link -->
-                            {% if audit_logs.has_previous %}
-                                <li class="page-item">
-                                    <!-- CRUCIAL: Keeps your current customer page view intact while moving logs -->
-                                    <a class="page-link" href="?page={{ customers.number }}&log_page={{ audit_logs.previous_page_number }}#audit-section">&laquo; Prev</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
-                            {% endif %}
-
-                            <!-- 2. Individual Numbered Target Page Row Links Chain Matrix Loops -->
-                            {% for num in audit_logs.paginator.page_range %}
-                                {% if audit_logs.number == num %}
-                                    <li class="page-item active">
-                                        <span class="page-link bg-dark border-dark fw-bold">{{ num }}</span>
-                                    </li>
-                                {% elif num > audit_logs.number|add:'-3' and num < audit_logs.number|add:'3' %}
-                                    <li class="page-item">
-                                        <a class="page-link text-dark" href="?page={{ customers.number }}&log_page={{ num }}#audit-section">{{ num }}</a>
-                                    </li>
-                                {% endif %}
-                            {% endfor %}
-
-                            <!-- 3. Next Page URL Trigger Navigation Link Link Link -->
-                            {% if audit_logs.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ customers.number }}&log_page={{ audit_logs.next_page_number }}#audit-section">Next &raquo;</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                {% endif %}
-                <!-- ============================================================================== -->
-
-            </div>
-        </section>
     </main>
 
     <!-- Local Bootstrap JS Bundle -->
