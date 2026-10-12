@@ -4,119 +4,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Intelligence Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <title>Executive Analytics Dashboard</title>
+    <link class="styles" rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --canvas-bg: #f8fafc;
+            --text-main: #334155;
+            --indigo-accent: #4f46e5;
+        }
+        body { 
+            background-color: var(--canvas-bg) !important; 
+            color: var(--text-main) !important; 
+            font-family: system-ui, -apple-system, sans-serif; 
+        }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar-panel { width: 260px; background-color: var(--sidebar-bg); color: #f1f5f9; flex-shrink: 0; }
+        .main-content-panel { flex-grow: 1; padding: 2.5rem; overflow-y: auto; }
+        .premium-card { 
+            background: #ffffff; 
+            border: 1px solid #e2e8f0 !important; 
+            border-radius: 12px !important; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important; 
+        }
+        .stat-card-accent {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff !important;
+        }
+        .table th { 
+            font-weight: 600 !important; 
+            text-transform: uppercase; 
+            font-size: 0.75rem !important; 
+            letter-spacing: 0.05em; 
+            color: #64748b !important; 
+            background-color: #f8fafc !important; 
+            border-bottom: 2px solid #e2e8f0 !important;
+        }
+        .badge-pill-neutral {
+            background-color: #f1f5f9 !important;
+            color: #475569 !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+    </style>
 </head>
-<body class="bg-light text-dark">
+<body>
 
-    <nav class="navbar navbar-dark bg-dark shadow-sm mb-4">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">📊 Executive Revenue Dashboard</span>
+    <div class="app-container">
+        
+        <!-- ==========================================================
+             SAAS ENTERPRISE LEFT SIDEBAR PANEL
+             ========================================================== -->
+        <aside class="sidebar-panel d-flex flex-column p-3 justify-content-between">
             <div>
-                <form action="{% url 'logout' %}" method="post" class="m-0">
+                <div class="d-flex align-items-center gap-2 mb-4 px-2">
+                    <span class="fs-4">📊</span>
+                    <h1 class="h5 m-0 fw-bold tracking-tight text-white">BI Suite</h1>
+                </div>
+                <hr class="text-secondary opacity-25">
+                <ul class="nav nav-pills flex-column mb-auto gap-1">
+                    <li class="nav-item">
+                        <a href="{% url 'executive_dashboard' %}" class="nav-link text-white bg-secondary bg-opacity-25 fw-semibold small py-2 px-3 rounded-3">
+                            📈 Revenue Analytics
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Operator Account Profile Logout Session Widget Area -->
+            <div class="bg-dark bg-opacity-50 p-2.5 rounded-3 border border-secondary border-opacity-10 text-start">
+                <p class="small m-0 fw-bold text-white truncate">{{ user.username }}</p>
+                <span class="small text-white-50" style="font-size: 0.7rem;">Corporate Stakeholder</span>
+                <form action="{% url 'logout' %}" method="post" class="mt-2 m-0">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger text-white">Log Out</button>
+                    <button type="submit" class="btn btn-sm btn-danger w-100 fw-semibold py-1 small">Sign Out</button>
                 </form>
             </div>
-        </div>
-    </nav>
+        </aside>
 
-    <main class="container my-5">
-        <!-- Analytic Overview Stat Cards Section -->
-                <!-- Total Revenue Master Highlights Banner -->
-        <div class="row g-3 mb-4">
-            <div class="col-12">
-                <div class="card shadow-sm border-0 bg-primary text-white text-center p-4">
-                    <h3 class="h6 text-uppercase fw-bold text-white-50 mb-1">Total System Revenue Earned</h3>
-                    <p class="h1 m-0 fw-bold">${{ total_revenue }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- UPDATED: 4-Column Granular Pricing Channels Breakdown Grid -->
-        <div class="row g-3 mb-5">
-            <div class="col-xl-3 col-sm-6">
-                <div class="card shadow-sm border-0 bg-success text-white text-center p-3 h-100">
-                    <h4 class="small text-uppercase fw-bold text-white-50 mb-1">Full-Price ($99.99)</h4>
-                    <p class="h2 m-0 fw-bold">{{ standard_sales_count }}</p>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6">
-                <div class="card shadow-sm border-0 bg-info text-white text-center p-3 h-100">
-                    <h4 class="small text-uppercase fw-bold text-white-50 mb-1">10% Off Sales ($89.99)</h4>
-                    <p class="h2 m-0 fw-bold">{{ discount_10_count }}</p>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6">
-                <div class="card shadow-sm border-0 bg-warning text-dark text-center p-3 h-100">
-                    <h4 class="small text-uppercase fw-bold text-dark-50 mb-1">20% Off Sales ($79.99)</h4>
-                    <p class="h2 m-0 fw-bold text-dark">{{ discount_20_count }}</p>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6">
-                <div class="card shadow-sm border-0 bg-secondary text-white text-center p-3 h-100">
-                    <h4 class="small text-uppercase fw-bold text-white-50 mb-1">Comp Accounts ($0.00)</h4>
-                    <p class="h2 m-0 fw-bold">{{ comp_accounts_count }}</p>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Master Accounting Cash Ledger Grid Box Table -->
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3">
-                <h2 class="h5 m-0 fw-bold text-secondary">📋 Complete Master Revenue Ledgers</h2>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">Transaction Date</th>
-                            <th>Customer Profile</th>
-                            <th>Reference ID</th>
-                            <th>Promotion / Discount Tag</th>
-                            <th class="text-end pe-3">Gross Payment Collected</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in payments %}
-                        <tr>
-                            <td class="ps-3 text-muted small">{{ item.created_at|date:"Y-m-d H:i" }}</td>
-                            <td class="fw-semibold text-dark">{{ item.subscription.user.username }}</td>
-                            <td class="font-monospace small text-secondary">{{ item.transaction_id }}</td>
-                            <td class="small text-muted">{{ item.discount_applied|default:"Standard Price" }}</td>
-                            <td class="text-end pe-3 fw-bold text-success">${{ item.amount }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted small italic">No transaction ledger records found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <!-- ==========================================================
+             MAIN CANVAS CONTENT AREA WORKSPACE
+             ========================================================== -->
+        <main class="main-content-panel">
+            
+            <!-- Global Action Workspace Top Headers Row -->
+            <div class="mb-4 pb-2 border-bottom border-light">
+                <h2 class="h3 fw-bold m-0 text-dark">Revenue Analytics</h2>
+                <p class="small text-muted m-0">Real-time financial intelligence reporting, promotional margin performance tracker, and transactional billing master lists.</p>
             </div>
 
-            <!-- Page Selection Navigation Links Matrix Footer -->
-            {% if payments.has_other_pages %}
-            <nav class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
-                <span class="small text-muted">Showing entries <strong>{{ payments.start_index }}</strong> to <strong>{{ payments.end_index }}</strong> of <strong>{{ payments.paginator.count }}</strong> total lines</span>
-                <ul class="pagination pagination-sm m-0">
-                    {% if payments.has_previous %}
-                        <li class="page-item"><a class="page-link text-dark" href="?page={{ payments.previous_page_number }}">&laquo; Prev</a></li>
-                    {% endif %}
-                    {% for num in payments.paginator.page_range %}
-                        <li class="page-item {% if payments.number == num %}active{% endif %}">
-                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                        </li>
-                    {% endfor %}
-                    {% if payments.has_next %}
-                        <li class="page-item"><a class="page-link text-dark" href="?page={{ payments.next_page_number }}">Next &raquo;</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %}
-        </div>
-    </main>
+            <!-- Total Revenue Master Highlights Banner -->
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <div class="card premium-card stat-card-accent border-0 text-center p-4">
+                        <h3 class="h6 text-uppercase fw-bold text-white-50 mb-1" style="letter-spacing: 0.05em;">Total System Gross Revenue Earned</h3>
+                        <p class="display-5 m-0 fw-bold">${{ total_revenue }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Granular Pricing Channels Breakdown Grid -->
+            <div class="row g-3 mb-5">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card premium-card border-0 text-center p-3 h-100">
+                        <h4 class="small text-uppercase fw-bold text-muted mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Full-Price ($99.99)</h4>
+                        <p class="h2 m-0 fw-bold text-dark">{{ standard_sales_count }}</p>
+                        <span class="small text-muted mt-1" style="font-size: 0.75rem;">Standard conversions</span>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card premium-card border-0 text-center p-3 h-100">
+                        <h4 class="small text-uppercase fw-bold text-muted mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">10% Off Sales ($89.99)</h4>
+                        <p class="h2 m-0 fw-bold text-dark">{{ discount_10_count }}</p>
+                        <span class="small text-muted mt-1" style="font-size: 0.75rem;">Corporate promotions</span>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card premium-card border-0 text-center p-3 h-100">
+                        <h4 class="small text-uppercase fw-bold text-muted mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">20% Off Sales ($79.99)</h4>
+                        <p class="h2 m-0 fw-bold text-dark">{{ discount_20_count }}</p>
+                        <span class="small text-muted mt-1" style="font-size: 0.75rem;">Loyalty campaigns</span>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card premium-card border-0 text-center p-3 h-100">
+                        <h4 class="small text-uppercase fw-bold text-muted mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Comp Accounts ($0.00)</h4>
+                        <p class="h2 m-0 fw-bold text-dark">{{ comp_accounts_count }}</p>
+                        <span class="small text-muted mt-1" style="font-size: 0.75rem;">Administrative grants</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Master Accounting Cash Ledger Grid Box Table -->
+            <div class="card premium-card border-0">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h3 class="h5 m-0 fw-bold text-secondary">Complete Master Revenue Ledgers</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3 py-3">Transaction Date</th>
+                                <th>Customer Profile</th>
+                                <th>Reference ID</th>
+                                <th>Promotion / Discount Tag</th>
+                                <th class="text-end pe-3">Gross Payment Collected</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in payments %}
+                            <tr>
+                                <td class="ps-3 text-muted small font-monospace">{{ item.created_at|date:"Y-m-d H:i" }}</td>
+                                <td class="fw-semibold text-dark">{{ item.subscription.user.username }}</td>
+                                <td class="font-monospace small text-secondary" style="font-size: 0.8rem;">{{ item.transaction_id }}</td>
+                                <td>
+                                    {% if item.discount_applied == "None" or not item.discount_applied %}
+                                        <span class="badge badge-pill-neutral rounded-pill px-2.5 py-0.5 small fw-medium" style="font-size: 0.7rem;">Base Tier</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-medium" style="font-size: 0.7rem;">{{ item.discount_applied }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-3 fw-bold text-success font-monospace">${{ item.amount }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted small italic">No transaction ledger records found in system database.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Page Selection Navigation Links Matrix Footer -->
+                {% if payments.has_other_pages %}
+                <footer class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
+                <!-- Page Selection Navigation Links Matrix Footer -->
+                {% if payments.has_other_pages %}
+                <footer class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">Showing entries <strong>{{ payments.start_index }}</strong> to <strong>{{ payments.end_index }}</strong> of <strong>{{ payments.paginator.count }}</strong> total lines</span>
+                    <ul class="pagination pagination-sm m-0 gap-1">
+                        {% if payments.has_previous %}
+                            <li class="page-item"><a class="page-link rounded border-light text-dark shadow-none" href="?page={{ payments.previous_page_number }}">&laquo;</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link rounded border-primary bg-dark text-white fw-bold shadow-none">{{ payments.number }}</span></li>
+                        {% if payments.has_next %}
+                            <li class="page-item"><a class="page-link rounded border-light text-dark shadow-none" href="?page={{ payments.next_page_number }}">&raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </footer>
+                {% endif %}
+            </div>
+
+        </main>
+    </div>
 
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
