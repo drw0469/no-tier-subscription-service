@@ -9,6 +9,7 @@ class User(AbstractUser):
     is_customer = models.BooleanField(default=False)
     is_staff_member = models.BooleanField(default=False)
     is_admin_member = models.BooleanField(default=False)
+    is_executive_member = models.BooleanField(default=False)
 
     # Profile information
     bio = models.TextField(blank=True, max_length=500)

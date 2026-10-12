@@ -8,7 +8,7 @@ from datetime import timedelta
 User = get_user_model()
 
 class Command(BaseCommand):
-    help = "Generates mock customer accounts with realistic subscription tracking logs."
+    help = "Generates mock customer and specialized test executive accounts with realistic subscription tracking logs."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -17,20 +17,54 @@ class Command(BaseCommand):
             default=10, 
             help='Indicates the number of dummy customer profiles to generate.'
         )
+        # ADDED: Explicit control tracking flag parameters for stakeholder profiles
+        parser.add_argument(
+            '--executives',
+            type=int,
+            default=2,
+            help='Indicates the number of specialized test executive account profiles to generate.'
+        )
 
     def handle(self, *args, **options):
-        total = options['total']
-        self.stdout.write(self.style.MIGRATE_HEADING(f"--- Bulk Populating {total} Customers ---"))
-
-        # Base list of mock names to construct profiles randomly
-        first_names = ["Alex", "Jordan", "Taylor", "Morgan", "Casey", "Jamie", "Riley", "Cameron", "Rees", "Skyler"]
-        last_names = ["Smith", "Johnson", "Davis", "Rodriguez", "Martinez", "Wilson", "Anderson", "Thomas", "White", "Lee"]
-
-        count_created = 0
+        total_customers = options['total']
+        total_executives = options['executives']
         now = timezone.now()
 
-        for i in range(total):
-            # 1. Generate unique matching credentials 
+        # ==============================================================================
+        # PHASE 1: GENERATE SPECIALIZED EXECUTIVE STAKEHOLDERS
+        # ==============================================================================
+        self.stdout.write(self.style.MIGRATE_HEADING(f"\n--- Bulk Populating {total_executives} Executive Accounts ---"))
+        exec_count = 0
+        
+        for e in range(total_executives):
+            username = f"exec_partner{random.randint(10, 99)}"
+            email = f"{username}@company-stakeholder.com"
+
+            if User.objects.filter(username=username).exists():
+                continue
+
+            User.objects.create_user(
+                username=username,
+                email=email,
+                password="password123", # Uniform credentials for easy testing
+                first_name="Exec",
+                last_name=f"Partner #{e+1}",
+                is_executive_member=True, # Flipping the newly created role flag box matrix
+                is_staff=False,
+                is_superuser=False
+            )
+            self.stdout.write(self.style.SUCCESS(f"  • Created Executive Account: {username}"))
+            exec_count += 1
+
+        # ==============================================================================
+        # PHASE 2: GENERATE STANDARD CUSTOMER LOG DIRECTORIES
+        # ==============================================================================
+        self.stdout.write(self.style.MIGRATE_HEADING(f"\n--- Bulk Populating {total_customers} Customer Accounts ---"))
+        first_names = ["Alex", "Jordan", "Taylor", "Morgan", "Casey", "Jamie", "Riley", "Cameron", "Rees", "Skyler"]
+        last_names = ["Smith", "Johnson", "Davis", "Rodriguez", "Martinez", "Wilson", "Anderson", "Thomas", "White", "Lee"]
+        cust_count = 0
+
+        for i in range(total_customers):
             f_name = random.choice(first_names)
             l_name = random.choice(last_names)
             random_suffix = random.randint(100, 999)
@@ -38,34 +72,28 @@ class Command(BaseCommand):
             username = f"{f_name.lower()}{random_suffix}"
             email = f"{username}@example-sandbox.com"
             
-            # Skip if username衝突 overlaps an existing profile entry row
             if User.objects.filter(username=username).exists():
                 continue
 
-            # 2. Build the core customer shell record
             customer = User.objects.create_user(
                 username=username,
                 email=email,
-                password="password123", # Uniform password for easy developer test logins
+                password="password123",
                 first_name=f_name,
                 last_name=l_name,
                 is_customer=True
             )
 
-            # 3. Randomize account subscription health to mix up dashboard views
-            # 70% active subscribers, 30% inactive/expired
+            # Randomize account health (70% active subscribers, 30% naturally expired)
             is_active_status = random.random() < 0.70 
             
             if is_active_status:
-                # Active: starts recently, ends standard 365 days out
                 start = now - timedelta(days=random.randint(1, 100))
                 end = start + timedelta(days=365)
             else:
-                # Expired: started long ago, already passed its limit timeline
                 start = now - timedelta(days=random.randint(370, 450))
                 end = start + timedelta(days=365)
 
-            # 4. Inject subscription record entry into database storage engines
             sub = UserSubscription.objects.create(
                 user=customer,
                 start_date=start,
@@ -73,29 +101,37 @@ class Command(BaseCommand):
                 is_active=is_active_status
             )
 
-            # 5. Connect matching invoice history lines
-            txn_id = f"TXN-MOCK{random.randint(10000, 99999)}"
+            # Randomize billing entries to simulate full-price vs discounted invoices
+            # 80% Full Price, 15% Partial Discounts, 5% Comped accounts
+            rand_billing = random.random()
+            if rand_billing < 0.80:
+                final_price = 99.99
+                discount_text = "None"
+            elif rand_billing < 0.95:
+                final_price = 79.99
+                discount_text = "20% Promotional Loyalty Discount"
+            else:
+                final_price = 0.00
+                discount_text = "100% Free Administrative Complimentary Account"
+
             PaymentLog.objects.create(
                 subscription=sub,
-                amount=99.99,
-                transaction_id=txn_id,
+                amount=final_price,
+                transaction_id=f"TXN-MOCK{random.randint(10000, 99999)}",
                 status='completed',
+                discount_applied=discount_text,
                 created_at=start
             )
 
-            # 6. Drop baseline administrative setup audit trail log trace elements
             SubscriptionAuditLog.objects.create(
                 customer=customer,
-                performed_by=None, # System action indicator flag label element
+                performed_by=None,
                 action='activated' if is_active_status else 'deactivated',
-                notes=f"Bulk environment bootstrap seed setup generation row logic pipeline (Initial entry)."
+                notes=f"Bulk database bootstrap generation seed engine matrix profile setup."
             )
 
-            count_created += 1
+            cust_count += 1
 
-        self.stdout.write(
-            self.style.SUCCESS(f"\nSuccessfully populated database with {count_created} mock customers! 🎉")
-        )
-        self.stdout.write(
-            self.style.WARNING("All generated user passwords are standard: 'password123' for manual test logins.")
-        )
+        # Final terminal status report card summary metrics output lines
+        self.stdout.write(self.style.SUCCESS(f"\nExecution Complete: Successfully injected {exec_count} Executive and {cust_count} Customer entries! 🎉"))
+        self.stdout.write(self.style.WARNING("All generated profile account passwords are uniformly set to: 'password123'"))

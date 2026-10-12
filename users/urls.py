@@ -17,6 +17,7 @@ urlpatterns = [
     path('dashboard/customer/', views.customer_dashboard, name='customer_dashboard'),
     path('dashboard/staff/', views.staff_dashboard, name='staff_dashboard'),
     path('dashboard/admin/', views.admin_dashboard, name='admin_dashboard'),
+    path('dashboard/executive/', views.executive_dashboard, name='executive_dashboard'),
     path('dashboard/toggle-subscription/<int:user_id>/', views.toggle_subscription, name='toggle_subscription'),
 
     
@@ -32,6 +33,8 @@ urlpatterns = [
     path('manage/stop-impersonating/', views.stop_impersonating, name='stop_impersonating'),
 
     path('manage/audit-logs/', views.audit_log_view, name='audit_log_view'),
+
+
 
 
 

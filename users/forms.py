@@ -26,16 +26,24 @@ class StaffUserCreationForm(UserCreationForm):
     ROLE_CHOICES = [
         ('staff', 'Staff Member'),
         ('admin', 'Admin Member'),
+        ('executive', 'Business Executive (Read-Only Financial View)'),
     ]
-    role = forms.ChoiceField(choices=ROLE_CHOICES, required=True)
+    role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.RadioSelect, required=True)
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'phone_number', 'address')
+        fields = ('username', 'email', 'first_name', 'last_name', 'phone_number', 'address', 'role')
 
     def save(self, commit=True):
         user = super().save(commit=False)
         role = self.cleaned_data.get('role')
+
+        # Reset all flags to prevent accidental double-role privileges leaks
+        user.is_admin_member = False
+        user.is_staff_member = False
+        user.is_executive_member = False
+        user.is_staff = False
+        user.is_superuser = False
 
         if role == 'admin':
             user.is_admin_member = True

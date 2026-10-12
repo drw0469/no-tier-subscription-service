@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils import timezone
+from django.db.models import Sum  
 
 from .forms import CustomerRegistration, ProfileEditForm, StaffUserCreationForm
 from .models import User, UserSubscription, SubscriptionAuditLog, PaymentLog
@@ -31,6 +32,8 @@ def dashboard_router(request):
     """Routes users dynamically to their corrent workspace on login."""
     if request.user.is_admin_member:
         return redirect('admin_dashboard')
+    if request.user.is_executive_member:
+        return redirect("executive_dashboard")
     elif request.user.is_staff_member:
         return redirect('staff_dashboard')
     elif request.user.is_customer:
@@ -70,13 +73,12 @@ def admin_dashboard(request):
     if not request.user.is_admin_member:
         raise PermissionDenied
     
-    # 1. Fetch search query from URL parameter (?search=xyz)
     search_query = request.GET.get('search', '').strip()
     
-    # 2. Base Query logic
+    # Base Query logic
     customer_query = User.objects.filter(is_customer=True)
     
-    # 3. Apply Multi-Field Database Filter if search query exists
+    # Apply Multi-Field Database Filter if search query exists
     if search_query:
         customer_query = customer_query.filter(
             Q(username__icontains=search_query) |
@@ -89,15 +91,16 @@ def admin_dashboard(request):
     all_customers = customer_query.order_by('username')
     staff = User.objects.filter(is_staff_member=True)
 
-    # 4. Customer Pagination Chunking
+    # Customer Pagination Chunking
     customer_paginator = Paginator(all_customers, 10) 
     customer_page_num = request.GET.get('page')
     customers_page = customer_paginator.get_page(customer_page_num)
-
+    executives = User.objects.filter(is_executive_member=True)
 
     return render(request, 'dashboards/admin.html', {
         'customers': customers_page, 
         'staff': staff,
+        'executives': executives,
         'search_query': search_query  # <-- Pass search string back to keep input field filled
     })
 
@@ -383,5 +386,34 @@ def stop_impersonating(request):
 
 
 
+@login_required
+def executive_dashboard(request):
+    """Financial intelligence dashboard restricted explicitly to Executive Stakeholders."""
+    if not (request.user.is_executive_member or request.user.is_admin_member):
+        raise PermissionDenied
 
+    # 1. Financial Ledger Analytical Calculations Math Metrics
+    total_revenue = PaymentLog.objects.filter(status='completed').aggregate(Sum('amount'))['amount__sum'] or 0.00
+    formatted_revenue = "{:.2f}".format(total_revenue)
+    
+    # 2. Extract explicit promotional tier count metrics
+    standard_sales_count = PaymentLog.objects.filter(amount=99.99, status='completed').count()
+    discount_10_count = PaymentLog.objects.filter(amount=89.99, status='completed').count()  # <-- ADDED 10% COUNT
+    discount_20_count = PaymentLog.objects.filter(amount=79.99, status='completed').count()  # <-- ADDED 20% COUNT
+    comp_accounts_count = PaymentLog.objects.filter(amount=0.00, status='completed').count()
+    
+    # 3. Pull individual detailed line entries for pagination
+    all_payments = PaymentLog.objects.all().select_related('subscription__user').order_by('-created_at')
+    paginator = Paginator(all_payments, 15)
+    page_number = request.GET.get('page')
+    payments_page = paginator.get_page(page_number)
+
+    return render(request, 'executive/metrics.html', {
+        'total_revenue': formatted_revenue,
+        'standard_sales_count': standard_sales_count,
+        'discount_10_count': discount_10_count,   # <-- PASS 10% VARIABLE
+        'discount_20_count': discount_20_count,   # <-- PASS 20% VARIABLE
+        'comp_accounts_count': comp_accounts_count,
+        'payments': payments_page
+    })
 
