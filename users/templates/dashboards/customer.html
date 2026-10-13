@@ -4,78 +4,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Dashboard</title>
+    <title>Customer Hub Portal</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        :root {
+            --canvas-bg: #f8fafc;
+            --text-main: #334155;
+            --primary-indigo: #4f46e5;
+            --border-color: #e2e8f0;
+        }
+        body { 
+            background-color: var(--canvas-bg) !important; 
+            color: var(--text-main) !important; 
+            font-family: system-ui, -apple-system, sans-serif; 
+        }
+        .premium-card { 
+            background: #ffffff; 
+            border: 1px solid var(--border-color) !important; 
+            border-radius: 12px !important; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important; 
+        }
+        .table th { 
+            font-weight: 600 !important; 
+            text-transform: uppercase; 
+            font-size: 0.72rem !important; 
+            letter-spacing: 0.05em; 
+            color: #64748b !important; 
+            background-color: #f8fafc !important; 
+        }
+        .badge-pill-success { background-color: #f0fdf4 !important; color: #16a34a !important; border: 1px solid #bbf7d0 !important; }
+        .badge-pill-danger { background-color: #fef2f2 !important; color: #dc2626 !important; border: 1px solid #fecaca !important; }
+    </style>
 </head>
-<body class="bg-light text-dark">
-    
-    <!-- ADDED BLOCK: IMPERSONATION NOTIFICATION CONTROL BANNER -->
-     {% if request.session.is_impersonating %}
-        <div class="bg-warning text-dark text-center py-2 px-3 fw-bold border-bottom border-warning-subtle d-flex justify-content-between align-items-center shadow-sm">
-            <span class="small">
-                ⚠️ WARNING: System Administrator View — Currently viewing workspace as: 
-                <u class="font-monospace text-primary bg-white px-2 py-0.5 rounded">{{ user.username }}</u>
-            </span>
-            <a href="{% url 'stop_impersonating' %}" class="btn btn-sm btn-dark fw-bold px-3 shadow">
-                🛑 Exit & Return to Dashboard
-            </a>
-        </div>
-    {% endif %}
+<body class="bg-light">
 
-    <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">✨ Customer Portal</span>
+    <!-- ==========================================================
+         PREMIUM CUSTOMER NAVBAR HEADER
+         ========================================================== -->
+    <nav class="navbar navbar-expand-lg bg-white border-bottom border-light shadow-sm py-3 mb-5">
+        <div class="container" style="max-width: 800px;">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fs-4">✨</span>
+                <span class="navbar-brand m-0 h1 fw-bold tracking-tight text-dark" style="font-size: 1.15rem;">Customer Member Hub</span>
+            </div>
             <div class="d-flex align-items-center gap-3">
-                <span class="text-white">Welcome, {{ user.username }}</span>
-                <a href="{% url 'edit_own_profile' %}" class="btn btn-sm btn-light">Edit Profile</a>
+                <span class="text-secondary small fw-medium">Welcome, <strong>{{ user.username }}</strong></span>
+                <a href="{% url 'edit_own_profile' %}" class="btn btn-sm btn-outline-dark font-weight-medium rounded-3 px-3">Edit Profile</a>
                 <form action="{% url 'logout' %}" method="post" class="m-0">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger">Log Out</button>
+                    <button type="submit" class="btn btn-sm btn-danger font-weight-semibold rounded-3 px-3">Sign Out</button>
                 </form>
             </div>
         </div>
     </nav>
 
-    <main class="container my-5">
-        <div class="card shadow-sm mx-auto" style="max-width: 800px;">
-            <div class="card-header bg-white py-3">
-                <h2 class="h4 card-title m-0">Your Subscription Status</h2>
+    <!-- ==========================================================
+         MAIN HUB CONTENT INTERFACE
+         ========================================================== -->
+    <main class="container">
+        
+        <!-- Flash Message Alerts -->
+        {% if messages %}
+        <div class="mx-auto mb-4" style="max-width: 800px;">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show premium-card border-0 p-3" role="alert">
+                    <span class="small fw-medium">{{ message }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- 1. PRIMARY SUBSCRIPTION STATUS CONTROL CARD -->
+        <div class="card premium-card border-0 mx-auto mb-4" style="max-width: 800px;">
+            <div class="card-header bg-white py-3 border-bottom-0">
+                <h2 class="h5 card-title m-0 fw-bold text-dark">Your Subscription Status</h2>
             </div>
-            <div class="card-body">
-                <div class="alert {% if user.subscription.has_valid_access %}alert-success{% else %}alert-danger{% endif %} m-0">
-                    <p class="h5 alert-heading mb-2">
-                        Status: {% if user.subscription.has_valid_access %}Active Account{% else %}No Active Subscription{% endif %}
-                    </p>
+            <div class="card-body pt-0">
+                <div class="alert {% if user.subscription.has_valid_access %}alert-success bg-success bg-opacity-10 border-success border-opacity-10{% else %}alert-danger bg-danger bg-opacity-10 border-danger border-opacity-10{% endif %} rounded-3 p-3 m-0">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="h5 alert-heading m-0 fw-bold text-dark">
+                            Account Standing:
+                        </span>
+                        {% if user.subscription.has_valid_access %}
+                            <span class="badge badge-pill-success rounded-pill px-2.5 py-0.5 small fw-semibold">Active Account</span>
+                        {% else %}
+                            <span class="badge badge-pill-danger rounded-pill px-2.5 py-0.5 small fw-semibold">No Active Subscription</span>
+                        {% endif %}
+                    </div>
                     
                     {% if user.subscription %}
-                        <p class="mb-0">Your current annual subscription ends on: <strong>{{ user.subscription.end_date|date:"F d, Y" }}</strong></p>
+                        <p class="small text-secondary mb-0">Your current premium membership billing cycle timeline concludes on: <strong class="text-dark">{{ user.subscription.end_date|date:"F d, Y" }}</strong></p>
                     {% else %}
-                        <p class="mb-0">You currently do not have an active annual membership history profile linked.</p>
-                    {% endif %}
+                        <p class="small text-secondary mb-0">You currently do not have an active annual membership history profile linked to this identity string.</p>
+                    {% endif %} 
 
-                    <!-- ============================================================================== -->
-                    <!-- INJECT THE DEACTIVATION LOG NOTICE BLOCK EXACTLY HERE                          -->
-                    <!-- ============================================================================== -->
+                    <!-- Dynamic Inline Account Suspension Explanations Notice Block -->
                     {% if cancellation_log %}
-                        <div class="mt-3 p-3 bg-white bg-opacity-75 rounded border border-danger-subtle text-start text-dark shadow-sm">
-                            <h4 class="h6 text-danger fw-bold mb-1">🚫 Account Deactivation Notice</h4>
-                            <p class="small mb-2 text-muted">
-                                This account was suspended/deactivated on <strong>{{ cancellation_log.created_at|date:"F d, Y \a\t H:i" }}</strong> by 
-                                <strong>{{ cancellation_log.performed_by.username|default:"System Engine" }}</strong>.
+                        <div class="mt-3 p-3 bg-white bg-opacity-75 rounded-3 border border-danger-subtle text-start text-dark shadow-sm">
+                            <h4 class="h6 text-danger fw-bold mb-1">🚫 Official Deactivation Notice</h4>
+                            <p class="small mb-2 text-muted" style="font-size: 0.75rem;">
+                                This workspace was deactivated on <strong>{{ cancellation_log.created_at|date:"F d, Y" }} at {{ cancellation_log.created_at|date:"H:i" }}</strong> by <strong>{{ cancellation_log.performed_by.username|default:"System Automation Engine" }}</strong>.
                             </p>
-                            <div class="p-2 bg-light rounded border font-monospace small italic text-secondary">
+                            <div class="p-2.5 bg-light bg-opacity-50 rounded-3 border font-monospace small italic text-secondary" style="font-size: 0.75rem;">
                                 "{{ cancellation_log.notes }}"
                             </div>
                         </div>
                     {% endif %}
-                    <!-- ============================================================================== -->
 
-
-                    <!-- ADDED BLOCK: Displays payment button inline only when access is missing -->
+                    <!-- Simulated Local Stripe Sandbox Payment Option Checkout Button Row -->
                     {% if not user.subscription.has_valid_access %}
-                        <div class="mt-4 pt-3 border-top border-danger-subtle">
-                            <p class="small text-muted mb-2">Unlock unlimited premium features for an entire year:</p>
-                            <a href="{% url 'mock_checkout' %}" class="btn btn-danger fw-bold px-4 shadow-sm">
+                        <div class="mt-4 pt-3 border-top border-secondary border-opacity-10">
+                            <p class="small text-muted mb-2">Unlock continuous premium features and unlimited access for an entire year:</p>
+                            <a href="{% url 'mock_checkout' %}" class="btn btn-dark fw-semibold px-4 py-2 shadow-sm rounded-3" style="background-color: var(--primary-indigo); border-color: var(--primary-indigo);">
                                 💳 Purchase Annual Subscription Access ($99/yr)
                             </a>
                         </div>
@@ -84,63 +125,20 @@
             </div>
         </div>
 
-        <!-- PAST PAYMENTS LOGS DISPLAY BOX PANEL -->
-        <div class="card shadow-sm mx-auto mt-4" style="max-width: 800px;">
-            <div class="card-header bg-white py-3">
-                <h3 class="h5 card-title m-0 fw-bold text-muted">💳 Payment & Billing History</h3>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">Transaction Date</th>
-                            <th>Reference ID</th>
-                            <th>Amount Charged</th>
-                            <th class="text-end pe-3">Billing Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for payment in payments %}
-                        <tr>
-                            <td class="ps-3 text-muted small">{{ payment.created_at|date:"F d, Y H:i" }}</td>
-                            <td class="font-monospace small text-dark fw-medium">{{ payment.transaction_id }}</td>
-                            <td class="fw-semibold text-dark">${{ payment.amount }}</td>
-                            <td class="text-end pe-3">
-                                {% if payment.status == 'completed' %}
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Paid</span>
-                                {% elif payment.status == 'failed' %}
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2">Failed</span>
-                                {% else %}
-                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2">{{ payment.status|title }}</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center py-4 text-muted small italic">
-                                No past transaction records or invoice details found for this profile.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
         <!-- ==========================================================
-            NEW BLOCK: CUSTOMER ACCOUNT STATUS LOGS TIMELINE PANEL
-            ========================================================== -->
-        <div class="card shadow-sm mx-auto mt-4 mb-5" style="max-width: 800px;">
-            <div class="card-header bg-white py-3">
-                <h3 class="h5 card-title m-0 fw-bold text-muted">📋 Account Access & Status History</h3>
+             2. PAST ACCOUNT ACCESS STATUS & TIMELINE LEDGER CARD
+             ========================================================== -->
+        <div class="card premium-card border-0 mx-auto mb-4" style="max-width: 800px;">
+            <div class="card-header bg-white py-3 border-bottom-0">
+                <h3 class="h5 card-title m-0 fw-bold text-dark">📋 Account Access & Status History</h3>
             </div>
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                <table class="table align-middle mb-0">
+                    <thead>
                         <tr>
-                            <th class="ps-3">Update Date</th>
+                            <th class="ps-3 py-2.5">Update Date</th>
                             <th>Action Taken</th>
-                            <th class="w-75">Official Log Notes / Explanations</th>
+                            <th class="w-75 pe-3">Official Log Notes / Explanations</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -149,20 +147,18 @@
                             <td class="ps-3 text-muted small font-monospace">{{ log.created_at|date:"M d, Y H:i" }}</td>
                             <td>
                                 {% if log.action == 'activated' %}
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Access Granted</span>
+                                    <span class="badge badge-pill-success rounded-pill px-2.5 py-0.5 small fw-semibold" style="font-size: 0.65rem;">Access Granted</span>
                                 {% else %}
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2">Access Revoked</span>
+                                    <span class="badge badge-pill-danger rounded-pill px-2.5 py-0.5 small fw-semibold" style="font-size: 0.65rem;">Access Revoked</span>
                                 {% endif %}
                             </td>
-                            <td class="text-wrap small text-secondary italic">
+                            <td class="text-wrap small text-secondary italic pe-3">
                                 "{{ log.notes|default:"System state automated modification transition update." }}"
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="3" class="text-center py-4 text-muted small italic">
-                                No profile access status changes or subscription modifications have been recorded yet.
-                            </td>
+                            <td colspan="3" class="text-center py-4 text-muted small italic">No profile access status changes or subscription modifications have been recorded yet.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -170,10 +166,48 @@
             </div>
         </div>
 
-
+                <!-- ==========================================================
+             3. PAST PAYMENT & INVOICING HISTORICAL LEDGERS CARD
+             ========================================================== -->
+        <div class="card premium-card border-0 mx-auto mb-5" style="max-width: 800px;">
+            <div class="card-header bg-white py-3 border-bottom-0">
+                <h3 class="h5 card-title m-0 fw-bold text-dark">💳 Payment & Billing History</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3 py-2.5">Transaction Date</th>
+                            <th>Reference ID</th>
+                            <th>Promo Applied</th>
+                            <th>Amount Charged</th>
+                            <th class="text-end pe-3">Billing Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td class="ps-3 text-muted small font-monospace">{{ payment.created_at|date:"F d, Y H:i" }}</td>
+                            <td class="font-monospace small text-dark fw-medium" style="font-size: 0.8rem;">{{ payment.transaction_id }}</td>
+                            <td class="small text-secondary">{{ payment.discount_applied|default:"None" }}</td>
+                            <td class="fw-semibold text-dark font-monospace">${{ payment.amount }}</td>
+                            <td class="text-end pe-3">
+                                <span class="badge badge-pill-success rounded-pill px-2.5 py-0.5 small fw-semibold" style="font-size: 0.65rem;">Paid</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted small italic">No past transaction records or invoice details found for this profile.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     </main>
 
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>
+
