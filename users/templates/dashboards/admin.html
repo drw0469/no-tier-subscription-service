@@ -48,12 +48,12 @@
             </div>
             
             <!-- Operator Account Profile Logout Session Widget Area -->
-            <div class="bg-dark bg-opacity-50 p-2.5 rounded-3 border border-secondary border-opacity-10 text-start">
+            <div class="mt-auto w-100 bg-dark bg-opacity-50 p-2.5 rounded-3 border border-secondary border-opacity-10 text-start">
                 <p class="small m-0 fw-bold text-white truncate">{{ user.username }}</p>
-                <span class="small text-white-50" style="font-size: 0.7rem;">Master Root Admin</span>
+                <span class="small text-white-50" style="font-size: 0.7-rem; opacity: 0.6;">Master Root Admin</span>
                 <form action="{% url 'logout' %}" method="post" class="mt-2 m-0">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger w-100 fw-semibold py-1 small">Sign Out</button>
+                    <button type="submit" class="btn btn-sm btn-outline-danger w-100 fw-semibold py-1.5 small rounded-3">Sign Out</button>
                 </form>
             </div>
         </aside>
